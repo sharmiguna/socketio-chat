@@ -1,0 +1,145 @@
+ <!DOCTYPE html>
+<html  ng-app="myApp">
+<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<head>
+	<title>
+		endpoint URL
+	</title>
+	<style>
+      button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }  
+      #messages li:nth-child(odd) { background: #616163;color: white }
+      #chatcss {
+      	background:white; padding:3px; width: 100%; color:black; font-size:16px; overflow-y:scroll; overflow-x:hidden; height:400px;
+      }
+    </style>
+</head>
+
+
+<body ng-app="myApp">
+<div ng-controller="chatCtrl">
+	<div class = "container"  style="padding: 0; margin: 0; width: 100%; color: black">
+		<div class = "row" style="background-color: black; color: white ">
+			<div class = "col-md-12, col-sm-12">
+			<h3 style="padding-left: 20px">Welcome to this chat page {{currentroom}}</h3>
+			</div>
+		</div>
+		<div class="row" style="background-color: #b3b3b5">
+			<div class="col-md-9, col-sm-9" style="border: solid black 2px; padding-left: 3%">
+			<h3>Ping<i style="float: right; padding-right: 2%; color: yellow">{{username}}</i></h3>
+			<br>
+			<div id="chatcss" scroll="messages">
+			<p>Start the conversation</p>
+				<ul id="messages">
+					<li ng-repeat = "m in messages"> {{m}}</li>
+				</ul>
+				<br><br>
+			</div>
+			<br><br>
+			<input type="text" name="msg" ng-model="msg" style="width: 92%" ng-keyup="$event.keyCode == 13 && submit()" />
+			<input type="button" name="submit" ng-click="submit()" value="send"  style="width: 6%" />
+			<br><br>
+			</div>
+			<div class="col-md-3, col-sm-3" style="background-color: #44444c; color: white; height: 560px;">
+			<h3>Lobbies</h3><br><br>
+				<ul>
+					<li ng-repeat="lobby in rooms"> {{lobby}} </li>
+				</ul>
+			</div>
+		</div>
+						
+		<div class="row" style="padding-left:20px; background-color: black; color: white ">
+			<h4>Chat commands</h4>
+			<ul><li>Change nickname:   /nick [username]</li>
+			<li>Join/create room:   /join [room name]</li></ul>
+		</div>
+	</div>
+	</div>
+
+<script src="/socket.io-client/dist/socket.io.js"></script>
+<script type="text/javascript">
+	var app = angular.module("myApp", []);
+
+	app.directive('scroll', function($timeout) {
+		return {
+			restrict: 'A',
+			link: function(scope, element, attr) {
+				scope.$watchCollection(attr.scroll, function(newVal) {
+					$timeout(function() {
+		    		element[0].scrollTop = element[0].scrollHeight;
+			    	});
+			  	});
+			}
+		}
+	});
+
+	app.controller("chatCtrl", function($scope) {
+		var socket = io.connect('http://localhost:4200');
+		$scope.messages = [];
+		$scope.rooms=[];
+		$scope.currentroom = 'room1';
+		socket.emit('adduser');
+
+		$scope.submit= function() {
+			var msgtemp = $scope.msg;
+			var compare = msgtemp.substring(0,5);
+			console.log("the comparison msg string is",compare);
+			if(compare == '/nick') {
+				var newname = msgtemp.slice(5);
+				console.log("the name is",newname);	
+				socket.emit('editname', newname);
+			} else if(compare == '/join')	{
+				var newroom = msgtemp.slice(5);
+				console.log("the string of the room", newroom);
+				if($scope.currentroom != newroom) {
+					socket.emit('switchRoom', newroom);
+				} else {
+					alert('already in room ', newroom);
+			    }
+			} else {
+				socket.emit('sendchat', $scope.msg);
+			}
+			$scope.msg = '';
+		};
+
+		socket.on('updatechat', function (username, data) {
+			$scope.$apply(function() {
+				console.log("updating chat with data = " + data);
+				$scope.messages.push(username + ' : ' + data);
+			});
+    	});
+
+		socket.on('username', function(username) {
+			$scope.$apply(function() {
+				console.log("entered the username", username);
+				$scope.username = username;
+			});
+		
+		});
+
+    	socket.on('updaterooms', function(rooms, current_room) {
+    		$scope.$apply(function() {
+				$scope.rooms = rooms;
+				if($scope.currentroom != current_room) {
+					$scope.messages=[];
+					$scope.messages.push('you have connected to this room');
+					$scope.currentroom = current_room;
+				} 
+			});		
+		});
+	});
+	</script>
+	</body>
+	</html>
+
+
+
+
+
+
+

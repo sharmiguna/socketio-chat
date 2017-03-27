@@ -1,0 +1,17 @@
+{
+  "name": "job-queue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "samplenode.js",
+  "author": "sharmiguna",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "1.14.1",
+    "express": "latest",
+    "http": "*",
+    "jade": "latest",
+    "mongoose": "*",
+    "socket.io": "^1.7.3",
+    "path": "*"
+  }
+}

@@ -1,0 +1,140 @@
+ <!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"><head>
+	<title>
+		endpoint URL
+	</title>
+	<style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+</head>
+
+
+<body ng-app="myApp" style="color: black;padding: 20px">
+	<div class = "container" ng-controller="chatCtrl">
+		<div class = "row" style="background-color: grey">
+			<div class = "col-md-12">
+				<h3>{{currentroom}}</h3>
+			</div>
+		</div>
+		<div class="row" style="background-color: #b3b3b5">
+			<div class="col-md-9">
+				<ul>
+					<li ng-repeat = "m in messages"> {{m}}</li>
+				</ul>
+				<input type="text" name="msg" ng-model="msg" />
+				<input type="button" name="submit" ng-click="submit" value="send" />
+			</div>
+			<div class="col-md-3">
+				<ul>
+					<li ng-repeat="lobby in lobbies"> {{lobby}} </li>
+				</ul>
+			</div>
+		</div>
+						
+		<div class="row">
+			<h4>Chat commands</h4>
+			<ul><li>Change nickname:   /nick [username]</li>
+			<li>Join/create room:   /join [room name]</li></ul>
+		</div>
+	</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+
+<script type="text/javascript">
+	var app = angular.module("myApp", []);
+	
+	app.controller("chatCtrl", function($scope,$http) {
+		var socket = io();
+		$scope.messages = [];
+		$scope.submit= function() {
+	  		socket.emit('chat message', $scope.msg);
+     			$scope.msg='';
+
+     		socket.on('chat message', function(msg){
+     			$scope.messages.push(msg);
+    		});
+	 };
+
+	   
+
+	});
+</script>
+
+ </body>
+ </html>
+
+
+
+
+
+<!-- 
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+	var socket = io.connect('http://localhost:8080');
+	socket.on(' ', function(){
+		socket.emit('adduser', prompt("What's your name?"));
+	});
+
+	socket.on('updatechat', function (username, data) {
+		$('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+	});
+
+	socket.on('updaterooms', function(rooms, current_room) {
+		$('#rooms').empty();
+		$.each(rooms, function(key, value) {
+			if(value == current_room){
+				$('#rooms').append('<div>' + value + '</div>');
+			}
+			else {
+				$('#rooms').append('<div><a href="#" onclick="switchRoom(\''+value+'\')">' + value + '</a></div>');
+			}
+		});
+	});
+
+	function switchRoom(room){
+		socket.emit('switchRoom', room);
+	}
+
+	$(function(){
+		$('#datasend').click( function() {
+			var message = $('#data').val();
+			$('#data').val('');
+			socket.emit('sendchat', message);
+		});
+
+		$('#data').keypress(function(e) {
+			if(e.which == 13) {
+				$(this).blur();
+				$('#datasend').focus().click();
+			}
+		});
+	});
+
+</script>
+<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
+	<b>ROOMS</b>
+	<div id="rooms"></div>
+</div>
+<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
+	<div id="conversation"></div>
+	<input id="data" style="width:200px;" />
+	<input type="button" id="datasend" value="send" />
+</div>
+</body>
+</html>
+ -->
